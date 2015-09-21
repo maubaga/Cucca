@@ -41,7 +41,7 @@ public class MainActivity extends AppCompatActivity {
     // a simple method called by a button
     public void push(View view){
         TextView textView = (TextView) findViewById(R.id.text1);
-        textView.setText("Hai premuto il pulsante... Bravoh!");
+        textView.setText("Hai premuto il pulsante!");
 
         Button button = (Button) view;
         button.setText("Bravoh!");
