@@ -45,5 +45,7 @@ public class MainActivity extends AppCompatActivity {
 
         Button button = (Button) view;
         button.setText("Bravoh!");
+
+        //altro commento aggiunto
     }
 }
