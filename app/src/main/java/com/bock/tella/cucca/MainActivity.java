@@ -1,12 +1,10 @@
 package com.bock.tella.cucca;
 
-import android.support.v7.app.AppCompatActivity;
+import android.content.Intent;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.Button;
-import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -31,23 +29,15 @@ public class MainActivity extends AppCompatActivity {
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
+        if (id == R.id.action_test) { // Start TestActivity
+            Intent intent = new Intent(this, TestActivity.class);
+            startActivity(intent);
+            return true;
+        }
         if (id == R.id.action_settings) {
             return true;
         }
 
         return super.onOptionsItemSelected(item);
-    }
-
-    // a simple method called by a button // test test
-    public void push(View view){
-        TextView textView = (TextView) findViewById(R.id.text1);
-        textView.setText("Hai premuto il pulsante!");
-
-        Button button = (Button) view;
-        button.setText("Bravoh!");
-
-        //altro commento aggiunto
-
-        // bea bock
     }
 }
