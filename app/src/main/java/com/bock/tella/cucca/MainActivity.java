@@ -38,6 +38,7 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    // a simple method called by a button
     public void push(View view){
         TextView textView = (TextView) findViewById(R.id.text1);
         textView.setText("Hai premuto il pulsante... Bravoh!");
