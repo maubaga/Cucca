@@ -18,7 +18,19 @@
         </activity>
         <activity
             android:name=".TestActivity"
-            android:label="@string/title_activity_test" >
+            android:label="@string/title_activity_test">
+
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.bock.tella.cucca.MainActivity"/>
+        </activity>
+        <activity
+            android:name=".Guide"
+            android:label="@string/title_activity_guide"
+            android:parentActivityName=".MainActivity" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.bock.tella.cucca.MainActivity" />
         </activity>
     </application>
 

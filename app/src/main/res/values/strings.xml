@@ -5,4 +5,7 @@
     <string name="action_settings">Settings</string>
     <string name="action_test">Test</string>
     <string name="title_activity_test">TestActivity</string>
+    <string name="action_guide">Guide</string>
+    <string name="title_activity_guide">Guide</string>
+    <string name="documentation">Insert the man for Cucca</string>
 </resources>
