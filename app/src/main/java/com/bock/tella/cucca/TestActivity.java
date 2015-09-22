@@ -79,7 +79,7 @@ public class TestActivity extends AppCompatActivity {
             if (top != -1)
                 textView2.setText(top + "");
             else
-                textView2.setText("Il mazzo e' finito!!");
+                textView2.setText("Il mazzo è finito!!");
             TextView textView = (TextView) findViewById(R.id.text_view);
             textView.setText(deck.toString());
 
@@ -98,8 +98,8 @@ public class TestActivity extends AppCompatActivity {
             cucca.setEndOfDeck(top);
             int winner = cucca.tableWinner();
             TextView textView = (TextView) findViewById(R.id.text_view);
-            byte[] hand = player.getHand();
-            textView.setText("La carta che vince e' " + hand[winner]);
+            byte[] table = cucca.getTable();
+            textView.setText("La carta che vince è " + table[winner]);
             count = 0;
             cucca.cleanTable();
         }
