@@ -7,7 +7,7 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context=".MainActivity">
+    tools:context=".TestActivity">
 
 
     <TextView
@@ -33,27 +33,14 @@
         android:layout_margin="20dp"
         android:text="@string/hello_world" />
 
-    <LinearLayout
-        android:layout_width="fill_parent"
+    <Button
+        android:id="@+id/winner_button"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:gravity="center"
-        android:orientation="horizontal">
+        android:layout_gravity="center"
+        android:onClick="winner"
+        android:text="Pesca" />
 
-        <Button
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:onClick="draw"
-            android:text="Pesca" />
-
-        <Button
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:onClick="winner"
-            android:text="Vedi vincitore" />
-
-    </LinearLayout>
 
     <TextView
         android:id="@+id/text_view3"

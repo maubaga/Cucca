@@ -43,7 +43,7 @@ public class MainActivity extends AppCompatActivity {
     /**
      * startTest() create a new Intent for execute some tests
      */
-    public void startTest(){
+    private void startTest(){
         Intent intent = new Intent(this,TestActivity.class);
         startActivity(intent);
     }
@@ -51,8 +51,8 @@ public class MainActivity extends AppCompatActivity {
     /**
      * startGuide() create a new Intent that explain the game rules
      */
-    public void startGuide(){
-        Intent intent= new Intent(this,Guide.class);
+    private void startGuide(){
+        Intent intent= new Intent(this,GuideActivity.class);
         startActivity(intent);
     }
 

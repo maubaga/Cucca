@@ -7,6 +7,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -46,40 +47,71 @@ public class TestActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    /**
+     * A method called by the button "mescola"
+     * @param view the button reference
+     */
     public void show(View view) {
         TextView textView = (TextView) findViewById(R.id.text_view);
         deck.mix();
         textView.setText(deck.toString());
-    }
 
-    public void play(int index) {
-        try {
-            byte cardNumber = Byte.parseByte(String.valueOf(card[index].getText()));
-            player.play(cardNumber);
-        } catch (Exception e) {
-        }
+        Button button = (Button) findViewById(R.id.winner_button);
+        button.setText("Pesca");
+        button.setVisibility(View.VISIBLE);
+
+        byte numberOfCard = player.getNumberOfCards();
+        for(byte i = 0; i < numberOfCard; i++)
+            player.playByIndex(i);
 
         showHand();
     }
 
+    /**
+     * A method called by the button "Pesca"
+     * @param view the button reference
+     */
+    public void winner(View view) {
+        count++;
+        if (count != 6) {
+            TextView textView2 = (TextView) findViewById(R.id.text_view2);
+            byte top = deck.draw();
+            if (top != -1)
+                textView2.setText(top + "");
+            else
+                textView2.setText("Il mazzo e' finito!!");
+            TextView textView = (TextView) findViewById(R.id.text_view);
+            textView.setText(deck.toString());
 
-    public void draw(View view) {
-        TextView textView2 = (TextView) findViewById(R.id.text_view2);
-        byte top = deck.draw();
-        if (top != -1)
-            textView2.setText(top + "");
-        else
-            textView2.setText("Il mazzo Ã¨ finito!!");
-        TextView textView = (TextView) findViewById(R.id.text_view);
-        textView.setText(deck.toString());
-
-        try {
             player.draw(top);
-        } catch (Exception e) {
+            cucca.tableAddCard(top);
+
+            showHand();
         }
-        showHand();
+        else {
+            Button button = (Button) view;
+            button.setVisibility(View.GONE);
+            TextView textView2 = (TextView) findViewById(R.id.text_view2);
+            byte top = deck.draw();
+            if (top != -1)
+                textView2.setText("La tavola e' " + top + "");
+            cucca.setEndOfDeck(top);
+            int winner = cucca.tableWinner();
+            TextView textView = (TextView) findViewById(R.id.text_view);
+            byte[] hand = player.getHand();
+            textView.setText("La carta che vince e' " + hand[winner]);
+            count = 0;
+            cucca.cleanTable();
+        }
+        if (count == 5){
+            Button button = (Button) view;
+            button.setText("Vedi Vincitore");
+        }
     }
 
+    /**
+     * A method that permits to show the cards in hand
+     */
     private void showHand() {
         String textureHand = "In mano hai " + player.getNumberOfCards() + " carte.\n";
         TextView textView3 = (TextView) findViewById(R.id.text_view3);
@@ -112,34 +144,17 @@ public class TestActivity extends AppCompatActivity {
         }
     }
 
-    public void winner(View view) {
-        count++;
-        if (count != 6) {
-            TextView textView2 = (TextView) findViewById(R.id.text_view2);
-            byte top = deck.draw();
-            if (top != -1)
-                textView2.setText(top + "");
-            else
-                textView2.setText("Il mazzo Ã¨ finito!!");
-            TextView textView = (TextView) findViewById(R.id.text_view);
-            textView.setText(deck.toString());
-
-            player.draw(top);
-            cucca.tableAddCard(top);
-
-            showHand();
+    /**
+     * A simple method that permits to play a card
+     * @param index the index of the card in the hand to play
+     */
+    private void play(int index) {
+        try {
+            byte cardNumber = Byte.parseByte(String.valueOf(card[index].getText()));
+            player.play(cardNumber);
+        } catch (Exception e) {
+            //TODO do something
         }
-        else {
-            TextView textView2 = (TextView) findViewById(R.id.text_view2);
-            byte top = deck.draw();
-            if (top != -1)
-                textView2.setText(top + "");
-            cucca.setEndOfDeck(top);
-            int winner = cucca.tableWinner();
-            TextView textView = (TextView) findViewById(R.id.text_view);
-            textView.setText("La carta che vince Ã¨ " + winner);
-            count = 0;
-            cucca.cleanTable();
-        }
+        showHand();
     }
 }
