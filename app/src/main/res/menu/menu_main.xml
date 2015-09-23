@@ -4,9 +4,11 @@
 
     <item android:id="@+id/action_test" android:title="@string/action_test"
         android:orderInCategory="100" app:showAsAction="never" />
+    <item android:id="@+id/action_new_match" android:title="@string/action_new_match"
+        android:orderInCategory="200" app:showAsAction="never"/>
     <item android:id="@+id/action_guide" android:title="@string/action_guide"
-        android:orderInCategory="200" app:showAsAction="never" />
-    <item android:id="@+id/action_settings" android:title="@string/action_settings"
         android:orderInCategory="300" app:showAsAction="never" />
+    <item android:id="@+id/action_settings" android:title="@string/action_settings"
+        android:orderInCategory="400" app:showAsAction="never" />
 
 </menu>
