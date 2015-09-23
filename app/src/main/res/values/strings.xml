@@ -8,15 +8,19 @@
     <string name="title_activity_test">TestActivity</string>
     <string name="action_guide">Guide</string>
     <string name="title_activity_guide">Guide</string>
+    <string name="action_new_match">New Match</string>
     <string name="documentation">
         Regole:
+
             Si gioca in 4 giocatori (3 bot e 1 player) con un mazzo di 40 carte veneziane.
             Ogni giocatore parte con 21 punti. All\' inizio del gioco viene sorteggiato
             il mazziere e ad ogni mano il mazziere cambia. Il giro del gioco e\' orario.
             Vengono distribuite, una alla volta, 5 carte a testa e il giocatore seguente al
             mazziere e\' il primo di mano.
+
             Durante la fase di cambio carte, il giocatore oppure gli avversari, possono chiamare
-            CUCCA. Se viene chiamata cucca nessun giocatore puo cambiare le carte.
+            CUCCA.
+            Se viene chiamata cucca nessun giocatore puo cambiare le carte.
             Ci sono 2 tipi di  CUCCA:
                 1) Normale (spade,bastoni,coppe): il giocatore che chiama CUCCA deve vincere almeno
                     3 mani
@@ -42,9 +46,6 @@
             dello stesso seme con il numero piu\' alto (altrimenti una carta dello stesso seme)
             oppure se non hanno quel seme devono giocare una briscola e se non si hanno briscole una carta qualsiasi.
 
-
-
-
-
     </string>
+
 </resources>
