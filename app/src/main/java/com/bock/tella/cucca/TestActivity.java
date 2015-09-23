@@ -84,7 +84,7 @@ public class TestActivity extends AppCompatActivity {
             textView.setText(deck.toString());
 
             player.draw(top);
-            cucca.tableAddCard(top);
+            cucca.tableAddCard(top, 0);
 
             showHand();
         }

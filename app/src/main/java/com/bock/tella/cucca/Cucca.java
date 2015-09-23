@@ -6,10 +6,11 @@ package com.bock.tella.cucca;
  * A class that manage the game
  */
 public class Cucca {
+    private Deck deck;
     private int numOfPlayer;
     private int currentTurn;
     private int topOfTable;
-    private byte endOfDeck;
+    private byte endOfDeck;        // briscola
     private byte[] table;
     private int[] mapCardPlayer;   // Need to mapping the cards play by the players
     private Player[] players;
@@ -34,6 +35,16 @@ public class Cucca {
 
         setCurrentTurn(0);
         cleanTable();
+
+        deck = new Deck();
+    }
+
+    /**
+     * A method that return the id of the player
+     * @return an int number that represents the id of the player
+     */
+    public int getCurrentTunr(){
+        return currentTurn;
     }
 
     /**
@@ -50,21 +61,14 @@ public class Cucca {
     }
 
     /**
-     * A method that return the player with id index
+     * A method that return the player's hand with id index
      * @param index the id of the player
-     * @return
+     * @return a byte array that represent the hand of the index player
      */
-    public Player getPlayer(int index){
-        return players[index];
+    public byte[] getPlayerHand(int index){
+        return players[index].getHand();
     }
 
-    /**
-     * A method that return the id of the player
-     * @return
-     */
-    public int getCurrentTunr(){
-        return currentTurn;
-    }
     /**
      * A method that set the player's turn
      * @param turn  the id of the player
@@ -77,7 +81,7 @@ public class Cucca {
 
     /**
      * A method that set the main seed at the bottom of the deck
-     * @param end the card at the bottom of the deck
+     * @param end the card at the bottom of the deck, must be between 0 and 39
      */
     public void setEndOfDeck(byte end){
         if(end < 0 || end >= 40)
@@ -87,19 +91,21 @@ public class Cucca {
 
     /**
      * A method that add a card at the table
-     * @param card the card to add
+     * @param card the card to add, must be between 0 and 39
+     * @param playerID the id of the player that play the card
      */
-    public void tableAddCard(byte card){
+    public void tableAddCard(byte card, int playerID){
         if(card < 0 || card >= 40)
             throw new IllegalArgumentException("The card " + card + " is not a valid card");
+        mapCardPlayer[topOfTable] = playerID;
         table[topOfTable++] = card;
     }
 
     /**
      * A method that check who win this hand
-     * @return
+     * @return the index of the card that wins this hand (index in the table)
      */
-    public int tableWinner(){
+    public int tableWinner(){ //TODO change in the player that wins this hand
         int winner = -1;
         byte max = -1;
         for(int i = 0; i < table.length; i++){
@@ -124,19 +130,84 @@ public class Cucca {
     }
 
 
-    public boolean isValidCard(byte card, Player player){
-        if(table[0] == -1)               // There are no card on the table
+    /**
+     * A method that check if the player can play the card or not
+     * @param card the card to play
+     * @param player the player that wants to play a card
+     * @return true if the card is playable, false otherwise
+     */
+    public boolean isValidCard(byte card, Player player){ //TODO return different values
+        byte firstCard = table[0];
+        if(firstCard == -1)               // There are no card on the table
             return true;
 
-        if (hasSameSeed(table[0], card)) // The seed is the same on the table
+        if (hasSameSeed(firstCard, card)) // The seed is the same on the table
             return true;
-        if (cardValueConverter(card) >= 20 && !hasSeedInHand(table[0], player)) // The card is a briscola and the player has not the same seed on the table in hand
-            return true;
+
+        // the card has not the same seed
+        if(!hasSeedInHand(firstCard, player)){     // Check if has not same seed in hand
+            if(!hasSeedInHand(endOfDeck, player))  // Check if has not "briscola"
+                return true;
+            else
+                return false;                      // The player has a "briscola"
+        }
 
         return false;
     }
 
+    /**
+     * A method that start the game give 5 cards for each players and set the end of deck
+     */
+    public void startGame(){
+        deck.mix();
+        for(int i = 0; i < numOfPlayer; i++){  // each players draw 5 card
+            for(int j = 0; j < 5; j++){
+                players[i].draw(deck.draw());
+            }
+        }
 
+        setEndOfDeck(deck.draw());
+    }
+
+    /**
+     * A method that permits to a player to change at most 4 cards
+     * @param cardsToChange a byte array that contains the card value to change
+     * @param playerID the player id that change the card
+     */
+    public void changeCards(byte[] cardsToChange, int playerID){
+        if(cardsToChange.length >= 5)
+            throw new IllegalArgumentException("You can change at most 4 cards!");
+
+        for(int i = 0; i < cardsToChange.length; i++){
+            players[playerID].play(cardsToChange[i]);
+            players[playerID].draw(deck.draw());
+        }
+    }
+
+    /**
+     * A method that permits to a player to change at most 4 cards
+     * @param cardsToChange a byte array that contains the card index in the hand to change
+     * @param playerID the player id that change the card
+     */
+    public void changeCardsByIndex(byte[] cardsToChange, int playerID){
+        if(cardsToChange.length >= 5)
+            throw new IllegalArgumentException("You can change at most 4 cards!");
+
+        for(int i = 0; i < cardsToChange.length; i++){
+            players[playerID].playByIndex(cardsToChange[i]);
+            players[playerID].draw(deck.draw());
+        }
+    }
+
+
+    /**
+     * This method converter the value of the card in relation with the "briscola" and the first
+     * card plays in the table
+     * @param card the card to converter
+     * @return a byte number between 20 and 29 for the briscola's card,
+     *                       between 10 and 19 for the card that have the same seed of the endOfDeck
+     *                       between  0 and  9 for the card that have no value in this hand
+     */
     private byte cardValueConverter(byte card){
         byte newCard = (byte) (card / 10);
 
@@ -147,6 +218,12 @@ public class Cucca {
         return (byte) (card - newCard * 10);
     }
 
+    /**
+     * A method that check if two cards has the same seed
+     * @param card1 the first card to check
+     * @param card2 the second card to check
+     * @return true if the cards has the same seed, false otherwise
+     */
     private boolean hasSameSeed(byte card1, byte card2){
         byte newCard1 = (byte) (card1 / 10);
         byte newCard2 = (byte) (card2 / 10);
@@ -155,6 +232,12 @@ public class Cucca {
         return false;
     }
 
+    /**
+     * A method that check if a player has a seed in hand, the seed is determinate by a card
+     * @param card the card that represent the seed to check
+     * @param player the player to check if has the seed of card in hand
+     * @return true if the player has the seed, false otherwise
+     */
     private boolean hasSeedInHand(byte card, Player player){
         byte[] hand = player.getHand();
 
