@@ -134,6 +134,8 @@ public class Cucca {
                 winner = i;
             }
         }
+
+        currentTurnPoints[mapCardPlayer[winner]]++;
         return mapCardPlayer[winner];
     }
 
