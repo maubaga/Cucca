@@ -14,6 +14,7 @@ public class Cucca {
     private byte[] table;
     private int[] mapCardPlayer;   // Need to mapping the cards play by the players
     private Player[] players;
+    private int[] currentTurnPoints;
 
     /**
      * Class constructor that generate and manage the game, id make an id for each player,
@@ -32,6 +33,7 @@ public class Cucca {
             players[i] = new Player(i);
 
         mapCardPlayer = new int[numOfPlayer];
+        currentTurnPoints = new int[numOfPlayer];
 
         setCurrentTurn(0);
         cleanTable();
@@ -119,6 +121,54 @@ public class Cucca {
     }
 
     /**
+     * A method that check who win this hand
+     * @return the index of the player that wins this hand (index in the table)
+     */
+    public int playerTableWinner(){
+        int winner = -1;
+        byte max = -1;
+        for(int i = 0; i < table.length; i++){
+            byte tmp = cardValueConverter(table[i]);
+            if(tmp > max){
+                max = tmp;
+                winner = i;
+            }
+        }
+        return mapCardPlayer[winner];
+    }
+
+    /**
+     * A method that permits to a player to change at most 4 cards
+     * @param cardsToChange a byte array that contains the card value to change
+     * @param playerID the player id that change the card
+     */
+    public void changeCards(byte[] cardsToChange, int playerID){
+        if(cardsToChange.length >= 5)
+            throw new IllegalArgumentException("You can change at most 4 cards!");
+
+        for (byte card : cardsToChange) {
+            players[playerID].play(card);
+            players[playerID].draw(deck.draw());
+        }
+    }
+
+    /**
+     * A method that permits to a player to change at most 4 cards
+     * @param cardsToChange a byte array that contains the card index in the hand to change
+     * @param playerID the player id that change the card
+     */
+    public void changeCardsByIndex(byte[] cardsToChange, int playerID){
+        if(cardsToChange.length >= 5)
+            throw new IllegalArgumentException("You can change at most 4 cards!");
+
+        for (byte cardIndex : cardsToChange) {
+            players[playerID].playByIndex(cardIndex);
+            players[playerID].draw(deck.draw());
+        }
+    }
+
+
+    /**
      * A method that clean the table
      */
     public void cleanTable(){
@@ -128,7 +178,6 @@ public class Cucca {
         }
         topOfTable = 0;
     }
-
 
     /**
      * A method that check if the player can play the card or not
@@ -164,39 +213,34 @@ public class Cucca {
             for(int j = 0; j < 5; j++){
                 players[i].draw(deck.draw());
             }
+            currentTurnPoints[i] = 0;
         }
 
         setEndOfDeck(deck.draw());
     }
 
     /**
-     * A method that permits to a player to change at most 4 cards
-     * @param cardsToChange a byte array that contains the card value to change
-     * @param playerID the player id that change the card
+     * This method end the phase of the game and update the players' point, and check if someone wins the match
+     * @return the ID of the winner or -1 if nobody win this match
      */
-    public void changeCards(byte[] cardsToChange, int playerID){
-        if(cardsToChange.length >= 5)
-            throw new IllegalArgumentException("You can change at most 4 cards!");
+    public int endGame(){
+        int minPoint = players[0].getPoints();
+        int winnerID = -1;
+        for(int i = 0; i < currentTurnPoints.length; i++){
+            if(currentTurnPoints[i] == 0)
+                players[i].addPoints(5);
+            else
+                players[i].removePoints(currentTurnPoints[i]);
 
-        for(int i = 0; i < cardsToChange.length; i++){
-            players[playerID].play(cardsToChange[i]);
-            players[playerID].draw(deck.draw());
+            if (players[i].getPoints() < minPoint){
+                minPoint = players[i].getPoints();
+                winnerID = i;
+            }
         }
-    }
 
-    /**
-     * A method that permits to a player to change at most 4 cards
-     * @param cardsToChange a byte array that contains the card index in the hand to change
-     * @param playerID the player id that change the card
-     */
-    public void changeCardsByIndex(byte[] cardsToChange, int playerID){
-        if(cardsToChange.length >= 5)
-            throw new IllegalArgumentException("You can change at most 4 cards!");
-
-        for(int i = 0; i < cardsToChange.length; i++){
-            players[playerID].playByIndex(cardsToChange[i]);
-            players[playerID].draw(deck.draw());
-        }
+        if(players[winnerID].getPoints() <= 0)
+            return winnerID;
+        return -1;
     }
 
 
@@ -227,9 +271,7 @@ public class Cucca {
     private boolean hasSameSeed(byte card1, byte card2){
         byte newCard1 = (byte) (card1 / 10);
         byte newCard2 = (byte) (card2 / 10);
-        if(newCard1 == newCard2)
-            return true;
-        return false;
+        return newCard1 == newCard2;
     }
 
     /**
@@ -241,8 +283,8 @@ public class Cucca {
     private boolean hasSeedInHand(byte card, Player player){
         byte[] hand = player.getHand();
 
-        for(int i = 0; i < hand.length; i++)
-            if(hasSameSeed(card, hand[i]))
+        for (byte cardHand : hand)
+            if (hasSameSeed(card, cardHand))
                 return true;
 
         return false;
