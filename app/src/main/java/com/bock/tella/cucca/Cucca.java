@@ -6,6 +6,11 @@ package com.bock.tella.cucca;
  * A class that manage the game
  */
 public class Cucca {
+    public static final int VALID_CARD = 1;
+    public static final int REPLY = -1;
+    public static final int REPLY_EXCEEDING = -2;
+    public static final int CUT = -3;
+    public static final int CUT_EXCEEDING = -4;
     private Deck deck;
     private int numOfPlayer;
     private int currentTurn;
@@ -192,16 +197,17 @@ public class Cucca {
         topOfTable = 0;
     }
 
+    /*
     /**
      * A method that check if the player can play the card or not
      *
-     * @param card the card to play
+     * @param card      the card to play
      * @param tableCard the first card in the table, -1 if there are no cards
-     * @param seed the seed of this current game
-     * @param player the player that wants to play a card
+     * @param seed      the seed of this current game
+     * @param player    the player that wants to play a card
      * @return true if the card is playable, false otherwise
-     */
-    public static boolean isValidCard(byte card, byte tableCard, byte seed, Player player) { //TODO return different values
+     *
+    public static boolean isValidCard(byte card, byte tableCard, byte seed, Player player) {
         if (tableCard == -1)               // There are no card on the table
             return true;
 
@@ -217,33 +223,66 @@ public class Cucca {
         }
 
         return false;
-    }
+    }*/
 
     /**
-     * A method that check if the player can play the card or not
+     * A method that check if the player can play the card or not, return VALID_CARD (public constant of this class) if the card is valid and it can be played
+     * return a negative number if the card can't be played, the values of negative number are public constants of this class:
+     * REPLY: if the player must reply with a card
+     * REPLY_EXCEED: if the player must exceed with a "non-briscola" card
+     * CUT: if the player must play a "briscola"
+     * CUT_EXCEED: if the player must exceed the "briscola"
      *
-     * @param card the card to play
-     * @param table an byte array that contains the cards on the table
-     * @param seed the seed of this current game
+     * @param card   the card to play
+     * @param table  an byte array that contains the cards on the table
+     * @param endOfDeck   the seed of this current game
      * @param player the player that wants to play a card
      * @return true if the card is playable, false otherwise
      */
-    public static int isValidCardValue(byte card, byte[] table, byte seed, Player player) { //TODO return different values
+    public static int isValidCard(byte card, byte[] table, byte endOfDeck, Player player) {
         if (table.length == 0)               // There are no card on the table
-            return 1;
+            return VALID_CARD;
 
-        if (hasSameSeed(table[0], card)) // The seed is the same on the table
-            return 1;
+        //----------> The seed is the same of the table <----------
+        if (hasSameSeed(table[0], card)) {
+            if(exceedsTheTable(card, table, endOfDeck)) // exceed the table?
+                return VALID_CARD;
 
-        // the card has not the same seed
-        if (!hasSeedInHand(table[0], player)) {     // Check if has not same seed in hand
-            if (!hasSeedInHand(seed, player))  // Check if has not "briscola"
-                return 1;
-            else
-                return -1;                      // The player has a "briscola"
+            byte[] seedHand = getSeedCards(card, player);
+            for (byte aSeedHand : seedHand) {   // there is a card in hand that exceed the table?
+                if (exceedsTheTable(aSeedHand, table, endOfDeck))
+                    return REPLY_EXCEEDING;
+            }
+
+            // there isn't a card in hand that exceed the table
+            return VALID_CARD;
         }
 
-        return -1;
+        //----------> The seed is not the same of the table <----------
+        if(hasSeedInHand(table[0], player)) // can the player reply?
+            return REPLY;
+
+        // The player can't reply
+        if(hasSameSeed(card, endOfDeck)) {  // if card is a "briscola"
+            if(exceedsTheSeedOnTable(card, table, endOfDeck))  // exceed the table?
+                return VALID_CARD;
+
+            byte[] seedHand = getSeedCards(card, player);
+            for (byte aSeedHand : seedHand) {   // there is a card in hand that exceed the table?
+                if (exceedsTheSeedOnTable(aSeedHand, table, endOfDeck))
+                    return CUT_EXCEEDING;
+            }
+
+            // there isn't a card in hand that exceed the table
+            return VALID_CARD;
+        }
+
+        // The player can't reply and the card is not a "briscola"
+        if(hasSeedInHand(endOfDeck, player)) // The player has a "briscola"?
+            return CUT;
+
+        // The player has no "briscola" and no card of same seed of the table
+        return VALID_CARD;
     }
 
     /**
@@ -337,38 +376,65 @@ public class Cucca {
     }
 
     /**
-     * A method that check if a card get over the table, if it there is a "briscola" on the table the card don't need to get over
-     * @param card the card to check
-     * @param table the table
+     * A method that check if a card can exceed the table, if it there is a "briscola" on the table the card don't need to get over.
+     * This method assumes that the card are not a "briscola"
+     *
+     * @param card      the card to check
+     * @param table     the table
      * @param endOfDeck the end of the deck, or the seed of the game
      * @return
      */
-    private static boolean getOverTable(byte card, byte[] table, byte endOfDeck){
+    private static boolean exceedsTheTable(byte card, byte[] table, byte endOfDeck) {
         byte[] convertedTable = new byte[table.length];
-        for(int i = 0; i < table.length; i++){
+        for (int i = 0; i < table.length; i++) {
             convertedTable[i] = cardValueConverter(table[i], endOfDeck, table);
         }
 
         byte max = findMax(convertedTable);
 
-        if(max >= 20)      // there is a briscola on the table, i don't need to get over
+        if (max >= 20)      // there is a briscola on the table, i don't need to get over
             return true;
 
-        if(card > max)     // the card get over the table
+        if (cardValueConverter(card, endOfDeck, table) > max)     // the card get over the table
             return true;
 
         return false;      // the card don't get over the table
     }
 
     /**
-     * A method that returns a byte array that contains all the card that have the same seed of a card take by the hand of a player
-     * @param card the card that represents the seed that I need
+     * A method that check if a card can exceed the "briscola" on the table
+     * This method assumes that the card are a "briscola"
+     *
+     * @param card      the card to check
+     * @param table     the table
+     * @param endOfDeck the end of the deck, or the seed of the game
+     * @return
+     */
+    private static boolean exceedsTheSeedOnTable(byte card, byte[] table, byte endOfDeck) {
+        byte[] convertedTable = new byte[table.length];
+        for (int i = 0; i < table.length; i++) {
+            convertedTable[i] = cardValueConverter(table[i], endOfDeck, table);
+        }
+
+        byte max = findMax(convertedTable);
+
+        if (cardValueConverter(card, endOfDeck, table) > max)     // the card get over the table
+            return true;
+
+        return false;      // the card don't get over the table
+    }
+
+    /**
+     * A method that returns a byte array that contains all the cards that have the same seed of a card,
+     * these cards are taken by the hand of a player
+     *
+     * @param card   the card that represents the seed that I need
      * @param player the player where I find the cars
      * @return a byte array that contains the cards that have the same seed of card
      */
-    private static byte[] getSeedCards(byte card, Player player){
+    private static byte[] getSeedCards(byte card, Player player) {
         byte[] hand = player.getHand();
-        byte[] seedHand = new  byte[hand.length];
+        byte[] seedHand = new byte[hand.length];
 
         int index = 0;
         for (byte cardHand : hand) {
@@ -378,7 +444,7 @@ public class Cucca {
 
         byte[] finalSeedHand = new byte[seedHand.length];
 
-        for(int i = 0; i < index; i++)
+        for (int i = 0; i < index; i++)
             finalSeedHand[i] = seedHand[i];
 
         return finalSeedHand;
@@ -386,13 +452,14 @@ public class Cucca {
 
     /**
      * A simple method that find the max in a byte array
+     *
      * @param array the array to find the max
      * @return the max in the array
      */
-    private static byte findMax(byte[] array){
+    private static byte findMax(byte[] array) {
         byte max = array[0];
-        for(int i = 0; i < array.length; i++){
-            if(array[i] > max)
+        for (int i = 0; i < array.length; i++) {
+            if (array[i] > max)
                 max = array[i];
         }
         return max;
