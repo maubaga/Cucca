@@ -52,7 +52,7 @@ public class Cucca {
      *
      * @return an int number that represents the id of the player
      */
-    public int getCurrentTunr() {
+    public int getCurrentTurn() {
         return currentTurn;
     }
 
@@ -352,7 +352,7 @@ public class Cucca {
      * @param card2 the second card to check
      * @return true if the cards has the same seed, false otherwise
      */
-    private static boolean hasSameSeed(byte card1, byte card2) {
+    public static boolean hasSameSeed(byte card1, byte card2) {
         byte newCard1 = (byte) (card1 / 10);
         byte newCard2 = (byte) (card2 / 10);
         return newCard1 == newCard2;
