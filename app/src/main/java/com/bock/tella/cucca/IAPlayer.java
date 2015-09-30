@@ -26,14 +26,12 @@ public class IAPlayer extends  Player {
      }
 
     /**
-     * A method that think a whick card play
+     * A method that think a which card play
      * @param seed seed on the table
      * @param table table in this moment
      * @return return the byte index of card and if return -1 there are problem
      */
-
-    public byte selectCardToPlay(byte seed,byte[] table){
-
+    public byte selectCardToPlay(byte seed, byte[] table){
 
         if(table.length==0){ // I'm the first
             //I must search if I have ace of briscola!
@@ -140,10 +138,13 @@ public class IAPlayer extends  Player {
      */
     private static int findMax(byte[] array) {
         int max = -1;
+        int index = -1;
         for (int i = 0; i < array.length; i++) {
-            if (array[i] > max)
-                max = i;
+            if (array[i] > max) {
+                max = array[i];
+                index = i;
+            }
         }
-        return max;
+        return index;
     }
 }
