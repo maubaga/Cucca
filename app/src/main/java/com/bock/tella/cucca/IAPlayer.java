@@ -54,7 +54,7 @@ public class IAPlayer extends  Player {
 
 
         }
-        else if(table.length>=1){
+        else {
             //hidden the cards not playable
 
             byte [] tmp_hand=super.getHand();
@@ -74,8 +74,8 @@ public class IAPlayer extends  Player {
 
             for(int i=0;i<valid_card.length;i++){
                  if(valid_card[i]==1){
-                     playable_card[j]=tmp_hand[i];
-                     j++;
+                     playable_card[j++]=tmp_hand[i];
+
                  }
             }
 
@@ -86,7 +86,7 @@ public class IAPlayer extends  Player {
 
         }
 
-        return -1; //if return -1 there's a problem
+
 
     }
 
@@ -100,18 +100,18 @@ public class IAPlayer extends  Player {
     public byte[] changeBadCard(byte[] hand,byte seed){
 
         byte numberChangeCard=0;
-        int [] cardChange= new int[hand.length];
+        boolean [] cardChange= new boolean[hand.length];
 
         for(int i=0;i<hand.length;i++){
             if(Cucca.hasSameSeed(hand[i],seed)){
-                cardChange[i]=1;
+                cardChange[i]=true; //this card doesn't change
             }
-            else{cardChange[i]=-1; numberChangeCard++;}
+            else{cardChange[i]=false; numberChangeCard++;}
 
         }
 
         if(numberChangeCard == 5){
-            cardChange[findMax(hand)]=1;
+            cardChange[findMax(hand)]=true;
             numberChangeCard--;
         }
 
@@ -119,9 +119,9 @@ public class IAPlayer extends  Player {
         int j=0;
 
         for(int i=0;i<cardChange.length;i++){
-            if(cardChange[i]== -1){
-                badCard[j]=hand[i];
-                j++;
+            if(cardChange[i]== false){
+                badCard[j++]=hand[i];
+
             }
         }
 
