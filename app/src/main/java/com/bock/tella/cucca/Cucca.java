@@ -20,6 +20,7 @@ public class Cucca {
     private int[] mapCardPlayer;   // Need to mapping the cards play by the players
     private Player[] players;
     private int[] currentTurnPoints;
+    private boolean cucca;
 
     /**
      * Class constructor that generate and manage the game, id make an id for each player,
@@ -45,6 +46,97 @@ public class Cucca {
         cleanTable();
 
         deck = new Deck();
+
+        cucca = false;
+    }
+
+    /**
+     * Class constructor that generate and manage the game, id make an id for each player,
+     * the id go from 0 to numOfRealPlayer - 1 for the player
+     * and from numOfRealPlayer to numOfIAPlayer + numOfRealPlayer - 1
+     *
+     * @param numOfRealPlayer the number of real players at the game, must be between 1 and 7
+     * @param numOfIAPlayer   the number of IA players at the game, must be between 0 and 6
+     */
+    public Cucca(int numOfRealPlayer, int numOfIAPlayer) {
+        if (numOfRealPlayer < 1 || numOfRealPlayer > 7)
+            throw new IllegalArgumentException("The number " + numOfRealPlayer + " is not valid!");
+
+        int totalPlayer = numOfIAPlayer + numOfRealPlayer;
+        if (totalPlayer > 7)
+            throw new IllegalArgumentException("The number of total player is " + totalPlayer);
+
+        numOfPlayer = totalPlayer;
+        table = new byte[totalPlayer];
+
+        players = new Player[totalPlayer];
+
+        for (int i = 0; i < numOfRealPlayer; i++)
+            players[i] = new Player(i);
+
+        for (int i = numOfRealPlayer; i < numOfRealPlayer + numOfIAPlayer; i++)
+            players[i] = new IAPlayer(i);
+
+        mapCardPlayer = new int[numOfPlayer];
+        currentTurnPoints = new int[numOfPlayer];
+
+        setCurrentTurn(0);
+        cleanTable();
+
+        deck = new Deck();
+
+        cucca = false;
+    }
+
+    /**
+     * A method that call the Cucca state, it change the current turn
+     * @param player the player that call Cucca
+     */
+    public void callCucca(Player player){
+        cucca = true;
+        setCurrentTurn(player.getId());
+    }
+    /**
+     * A method that permits to a player to change at most 4 cards
+     *
+     * @param cardsToChange a byte array that contains the card value to change
+     * @param playerID      the player id that change the card
+     */
+    public void changeCards(byte[] cardsToChange, int playerID) {
+        if (cardsToChange.length >= 5)
+            throw new IllegalArgumentException("You can change at most 4 cards!");
+
+        for (byte card : cardsToChange) {
+            players[playerID].play(card);
+            players[playerID].draw(deck.draw());
+        }
+    }
+
+    /**
+     * A method that permits to a player to change at most 4 cards
+     *
+     * @param cardsToChange a byte array that contains the card index in the hand to change
+     * @param playerID      the player id that change the card
+     */
+    public void changeCardsByIndex(byte[] cardsToChange, int playerID) {
+        if (cardsToChange.length >= 5)
+            throw new IllegalArgumentException("You can change at most 4 cards!");
+
+        for (byte cardIndex : cardsToChange) {
+            players[playerID].playByIndex(cardIndex);
+            players[playerID].draw(deck.draw());
+        }
+    }
+
+    /**
+     * A method that clean the table
+     */
+    public void cleanTable() {
+        for (int i = 0; i < numOfPlayer; i++) {
+            table[i] = -1;
+            mapCardPlayer[i] = -1;
+        }
+        topOfTable = 0;
     }
 
     /**
@@ -81,6 +173,99 @@ public class Cucca {
     }
 
     /**
+     * A method that check if two cards has the same seed
+     *
+     * @param card1 the first card to check
+     * @param card2 the second card to check
+     * @return true if the cards has the same seed, false otherwise
+     */
+    public static boolean hasSameSeed(byte card1, byte card2) {
+        byte newCard1 = (byte) (card1 / 10);
+        byte newCard2 = (byte) (card2 / 10);
+        return newCard1 == newCard2;
+    }
+
+    /**
+     * A method that check if the player can play the card or not, return VALID_CARD (public constant of this class) if the card is valid and it can be played
+     * return a negative number if the card can't be played, the values of negative number are public constants of this class:
+     * REPLY: if the player must reply with a card
+     * REPLY_EXCEED: if the player must exceed with a "non-briscola" card
+     * CUT: if the player must play a "briscola"
+     * CUT_EXCEED: if the player must exceed the "briscola"
+     *
+     * @param card      the card to play
+     * @param table     an byte array that contains the cards on the table
+     * @param endOfDeck the seed of this current game
+     * @param player    the player that wants to play a card
+     * @return true if the card is playable, false otherwise
+     */
+    public static int isValidCard(byte card, byte[] table, byte endOfDeck, Player player) {
+        if (table.length == 0)               // There are no card on the table
+            return VALID_CARD;
+
+        //----------> The seed is the same of the table <----------
+        if (hasSameSeed(table[0], card)) {
+            if (exceedsTheTable(card, table, endOfDeck)) // exceed the table?
+                return VALID_CARD;
+
+            byte[] seedHand = getSeedCards(card, player);
+            for (byte aSeedHand : seedHand) {   // there is a card in hand that exceed the table?
+                if (exceedsTheTable(aSeedHand, table, endOfDeck))
+                    return REPLY_EXCEEDING;
+            }
+
+            // there isn't a card in hand that exceed the table
+            return VALID_CARD;
+        }
+
+        //----------> The seed is not the same of the table <----------
+        if (hasSeedInHand(table[0], player)) // can the player reply?
+            return REPLY;
+
+        // The player can't reply
+        if (hasSameSeed(card, endOfDeck)) {  // if card is a "briscola"
+            if (exceedsTheSeedOnTable(card, table, endOfDeck))  // exceed the table?
+                return VALID_CARD;
+
+            byte[] seedHand = getSeedCards(card, player);
+            for (byte aSeedHand : seedHand) {   // there is a card in hand that exceed the table?
+                if (exceedsTheSeedOnTable(aSeedHand, table, endOfDeck))
+                    return CUT_EXCEEDING;
+            }
+
+            // there isn't a card in hand that exceed the table
+            return VALID_CARD;
+        }
+
+        // The player can't reply and the card is not a "briscola"
+        if (hasSeedInHand(endOfDeck, player)) // The player has a "briscola"?
+            return CUT;
+
+        // The player has no "briscola" and no card of same seed of the table
+        return VALID_CARD;
+    }
+
+    /**
+     * A method that check who win this hand
+     *
+     * @return the index of the player that wins this hand (index in the table)
+     */
+    public int playerTableWinner() {
+        int winner = -1;
+        byte max = -1;
+        for (int i = 0; i < table.length; i++) {
+            byte tmp = cardValueConverter(table[i], endOfDeck, table);
+            if (tmp > max) {
+                max = tmp;
+                winner = i;
+            }
+        }
+
+        currentTurnPoints[mapCardPlayer[winner]]++;
+        return mapCardPlayer[winner];
+    }
+
+    /**
      * A method that set the player's turn
      *
      * @param turn the id of the player
@@ -90,6 +275,7 @@ public class Cucca {
             throw new IllegalArgumentException("The player " + turn + " doesn't exist!");
         currentTurn = turn;
     }
+
 
     /**
      * A method that set the main seed at the bottom of the deck
@@ -134,158 +320,6 @@ public class Cucca {
     }
 
     /**
-     * A method that check who win this hand
-     *
-     * @return the index of the player that wins this hand (index in the table)
-     */
-    public int playerTableWinner() {
-        int winner = -1;
-        byte max = -1;
-        for (int i = 0; i < table.length; i++) {
-            byte tmp = cardValueConverter(table[i], endOfDeck, table);
-            if (tmp > max) {
-                max = tmp;
-                winner = i;
-            }
-        }
-
-        currentTurnPoints[mapCardPlayer[winner]]++;
-        return mapCardPlayer[winner];
-    }
-
-    /**
-     * A method that permits to a player to change at most 4 cards
-     *
-     * @param cardsToChange a byte array that contains the card value to change
-     * @param playerID      the player id that change the card
-     */
-    public void changeCards(byte[] cardsToChange, int playerID) {
-        if (cardsToChange.length >= 5)
-            throw new IllegalArgumentException("You can change at most 4 cards!");
-
-        for (byte card : cardsToChange) {
-            players[playerID].play(card);
-            players[playerID].draw(deck.draw());
-        }
-    }
-
-    /**
-     * A method that permits to a player to change at most 4 cards
-     *
-     * @param cardsToChange a byte array that contains the card index in the hand to change
-     * @param playerID      the player id that change the card
-     */
-    public void changeCardsByIndex(byte[] cardsToChange, int playerID) {
-        if (cardsToChange.length >= 5)
-            throw new IllegalArgumentException("You can change at most 4 cards!");
-
-        for (byte cardIndex : cardsToChange) {
-            players[playerID].playByIndex(cardIndex);
-            players[playerID].draw(deck.draw());
-        }
-    }
-
-
-    /**
-     * A method that clean the table
-     */
-    public void cleanTable() {
-        for (int i = 0; i < numOfPlayer; i++) {
-            table[i] = -1;
-            mapCardPlayer[i] = -1;
-        }
-        topOfTable = 0;
-    }
-
-    /*
-    /**
-     * A method that check if the player can play the card or not
-     *
-     * @param card      the card to play
-     * @param tableCard the first card in the table, -1 if there are no cards
-     * @param seed      the seed of this current game
-     * @param player    the player that wants to play a card
-     * @return true if the card is playable, false otherwise
-     *
-    public static boolean isValidCard(byte card, byte tableCard, byte seed, Player player) {
-        if (tableCard == -1)               // There are no card on the table
-            return true;
-
-        if (hasSameSeed(tableCard, card)) // The seed is the same on the table
-            return true;
-
-        // the card has not the same seed
-        if (!hasSeedInHand(tableCard, player)) {     // Check if has not same seed in hand
-            if (!hasSeedInHand(seed, player))  // Check if has not "briscola"
-                return true;
-            else
-                return false;                      // The player has a "briscola"
-        }
-
-        return false;
-    }*/
-
-    /**
-     * A method that check if the player can play the card or not, return VALID_CARD (public constant of this class) if the card is valid and it can be played
-     * return a negative number if the card can't be played, the values of negative number are public constants of this class:
-     * REPLY: if the player must reply with a card
-     * REPLY_EXCEED: if the player must exceed with a "non-briscola" card
-     * CUT: if the player must play a "briscola"
-     * CUT_EXCEED: if the player must exceed the "briscola"
-     *
-     * @param card   the card to play
-     * @param table  an byte array that contains the cards on the table
-     * @param endOfDeck   the seed of this current game
-     * @param player the player that wants to play a card
-     * @return true if the card is playable, false otherwise
-     */
-    public static int isValidCard(byte card, byte[] table, byte endOfDeck, Player player) {
-        if (table.length == 0)               // There are no card on the table
-            return VALID_CARD;
-
-        //----------> The seed is the same of the table <----------
-        if (hasSameSeed(table[0], card)) {
-            if(exceedsTheTable(card, table, endOfDeck)) // exceed the table?
-                return VALID_CARD;
-
-            byte[] seedHand = getSeedCards(card, player);
-            for (byte aSeedHand : seedHand) {   // there is a card in hand that exceed the table?
-                if (exceedsTheTable(aSeedHand, table, endOfDeck))
-                    return REPLY_EXCEEDING;
-            }
-
-            // there isn't a card in hand that exceed the table
-            return VALID_CARD;
-        }
-
-        //----------> The seed is not the same of the table <----------
-        if(hasSeedInHand(table[0], player)) // can the player reply?
-            return REPLY;
-
-        // The player can't reply
-        if(hasSameSeed(card, endOfDeck)) {  // if card is a "briscola"
-            if(exceedsTheSeedOnTable(card, table, endOfDeck))  // exceed the table?
-                return VALID_CARD;
-
-            byte[] seedHand = getSeedCards(card, player);
-            for (byte aSeedHand : seedHand) {   // there is a card in hand that exceed the table?
-                if (exceedsTheSeedOnTable(aSeedHand, table, endOfDeck))
-                    return CUT_EXCEEDING;
-            }
-
-            // there isn't a card in hand that exceed the table
-            return VALID_CARD;
-        }
-
-        // The player can't reply and the card is not a "briscola"
-        if(hasSeedInHand(endOfDeck, player)) // The player has a "briscola"?
-            return CUT;
-
-        // The player has no "briscola" and no card of same seed of the table
-        return VALID_CARD;
-    }
-
-    /**
      * A method that start the game give 5 cards for each players and set the end of deck
      */
     public void startGame() {
@@ -300,12 +334,14 @@ public class Cucca {
         setEndOfDeck(deck.draw());
     }
 
+
     /**
      * This method end the phase of the game and update the players' point, and check if someone wins the match
      *
      * @return the ID of the winner or -1 if nobody win this match
      */
     public int endGame() {
+        cucca = false;
         int minPoint = players[0].getPoints();
         int winnerID = -1;
         for (int i = 0; i < currentTurnPoints.length; i++) {
@@ -325,7 +361,6 @@ public class Cucca {
         return -1;
     }
 
-
     /**
      * This method converter the value of the card in relation with the "briscola" and the first
      * card plays in the table
@@ -343,19 +378,6 @@ public class Cucca {
         if (hasSameSeed(card, table[0]))
             return (byte) (card - newCard * 10 + 10); // Delete the decade and add 10
         return (byte) (card - newCard * 10);
-    }
-
-    /**
-     * A method that check if two cards has the same seed
-     *
-     * @param card1 the first card to check
-     * @param card2 the second card to check
-     * @return true if the cards has the same seed, false otherwise
-     */
-    public static boolean hasSameSeed(byte card1, byte card2) {
-        byte newCard1 = (byte) (card1 / 10);
-        byte newCard2 = (byte) (card2 / 10);
-        return newCard1 == newCard2;
     }
 
     /**
@@ -382,7 +404,7 @@ public class Cucca {
      * @param card      the card to check
      * @param table     the table
      * @param endOfDeck the end of the deck, or the seed of the game
-     * @return
+     * @return true if the card exceeds the cards on the table (follow the rules of the game), false otherwise
      */
     private static boolean exceedsTheTable(byte card, byte[] table, byte endOfDeck) {
         byte[] convertedTable = new byte[table.length];
@@ -408,7 +430,7 @@ public class Cucca {
      * @param card      the card to check
      * @param table     the table
      * @param endOfDeck the end of the deck, or the seed of the game
-     * @return
+     * @return true if the card exceeds the cards on the table (follow the rules of the game), false otherwise
      */
     private static boolean exceedsTheSeedOnTable(byte card, byte[] table, byte endOfDeck) {
         byte[] convertedTable = new byte[table.length];
@@ -444,8 +466,7 @@ public class Cucca {
 
         byte[] finalSeedHand = new byte[seedHand.length];
 
-        for (int i = 0; i < index; i++)
-            finalSeedHand[i] = seedHand[i];
+        System.arraycopy(seedHand, 0, finalSeedHand, 0, index);
 
         return finalSeedHand;
     }
@@ -458,9 +479,9 @@ public class Cucca {
      */
     private static byte findMax(byte[] array) {
         byte max = array[0];
-        for (int i = 0; i < array.length; i++) {
-            if (array[i] > max)
-                max = array[i];
+        for (byte element : array) {
+            if (element > max)
+                max = element;
         }
         return max;
     }
