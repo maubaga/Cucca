@@ -5,127 +5,132 @@ import java.util.Random;
 /**
  * Created by bock on 26/09/15.
  */
-public class IAPlayer extends  Player {
+public class IAPlayer extends Player {
 
 
     /**
      * Class constructor that make a IA player with his id
+     *
      * @param id the id of the IA player
      */
-    public IAPlayer(int id){
+    public IAPlayer(int id) {
         super(id);
     }
 
     /**
      * Class constructor that make a IA player with his id
-     * @param id the id of the IA player
+     *
+     * @param id     the id of the IA player
      * @param points the start points of the IA player
      */
-     public IAPlayer(int id,int points){
-         super(id,points);
-     }
+    public IAPlayer(int id, int points) {
+        super(id, points);
+    }
 
     /**
      * A method that think a which card play
-     * @param seed seed on the table
+     *
+     * @param seed  seed on the table
      * @param table table in this moment
      * @return return the byte index of card and if return -1 there are problem
      */
-    public byte selectCardToPlay(byte seed, byte[] table){
+    public byte selectCardToPlay(byte seed, byte[] table) {
 
-        if(table.length==0){ // I'm the first
+        if (table.length == 0) { // I'm the first
             //I must search if I have ace of briscola!
-             int ace=super.findCard((byte)((seed/10)*10+9));
+            int ace = super.findCard((byte) ((seed / 10) * 10 + 9));
 
-            if(ace!= -1){
+            if (ace != -1) {
                 //play the ace
                 //super.playByIndex((byte)ace);
-                return (byte)ace;
-            }
-            else{//play any card
+                return (byte) ace;
+            } else {//play any card
 
                 //generated a random number and play hand[index]
-                Random r=new Random();
-                byte index=(byte)(r.nextInt((int)(super.getNumberOfCards())));
+                Random r = new Random();
+                byte index = (byte) (r.nextInt((int) (super.getNumberOfCards())));
                 //super.playByIndex(index);
                 return index;
 
             }
 
 
-        }
-        else {
+        } else {
             //hidden the cards not playable
 
-            byte [] tmp_hand=super.getHand();
-            int [] valid_card=new int[tmp_hand.length];
-            int valid=0;
+            byte[] tmp_hand = super.getHand();
+            int[] valid_card = new int[tmp_hand.length];
+            int valid = 0;
 
-            for(int i=0;i<valid_card.length;i++){
-                if(Cucca.isValidCard(tmp_hand[i],table,seed,this) == Cucca.VALID_CARD){
-                    valid_card[i]=1; valid++;
+            for (int i = 0; i < valid_card.length; i++) {
+                if (Cucca.isValidCard(tmp_hand[i], table, seed, this) == Cucca.VALID_CARD) {
+                    valid_card[i] = 1;
+                    valid++;
+                } else {
+                    valid_card[i] = -1;
                 }
-                else{valid_card[i]=-1;}
             }
 
-            byte [] playable_card= new byte[valid];
+            byte[] playable_card = new byte[valid];
 
-            int j=0;
+            int j = 0;
 
-            for(int i=0;i<valid_card.length;i++){
-                 if(valid_card[i]==1){
-                     playable_card[j++]=tmp_hand[i];
+            for (int i = 0; i < valid_card.length; i++) {
+                if (valid_card[i] == 1) {
+                    playable_card[j++] = tmp_hand[i];
 
-                 }
+                }
             }
 
-            Random r= new Random();
-            byte index=(byte)(r.nextInt(valid));
+            Random r = new Random();
+            byte index = (byte) (r.nextInt(valid));
             return index;
 
 
         }
 
 
-
     }
 
     /**
      * A method that choose some cards to change
+     *
      * @param hand hand of player
      * @param seed seed of table
      * @return returns an array of cards to change
      */
 
-    public byte[] changeBadCard(byte[] hand,byte seed){
+    public byte[] changeBadCard(byte[] hand, byte seed) {
 
-        byte numberChangeCard=0;
-        boolean [] cardChange= new boolean[hand.length];
+        byte numberChangeCard = 0;
+        boolean[] cardChange = new boolean[hand.length];
 
-        for(int i=0;i<hand.length;i++){
-            if(Cucca.hasSameSeed(hand[i],seed)){
-                cardChange[i]=true; //this card doesn't change
+        for (int i = 0; i < hand.length; i++) {
+            if (Cucca.hasSameSeed(hand[i], seed)) {
+                cardChange[i] = true; //this card doesn't change
+            } else {
+                cardChange[i] = false;
+                numberChangeCard++;
             }
-            else{cardChange[i]=false; numberChangeCard++;}
 
         }
 
-        if(numberChangeCard == 5){
-            cardChange[findMax(hand)]=true;
+        if (numberChangeCard == 5) {
+            cardChange[findMax(hand)] = true;
             numberChangeCard--;
         }
 
-        byte[] badCard= new byte[numberChangeCard];
-        int j=0;
+        byte[] badCard = new byte[numberChangeCard];
+        int j = 0;
 
-        for(int i=0;i<cardChange.length;i++){
-            if(cardChange[i]== false){
-                badCard[j++]=hand[i];
+        for (int i = 0; i < cardChange.length; i++) {
+            if (cardChange[i] == false) {
+                badCard[j++] = hand[i];
 
             }
         }
 
-    return badCard;
+        return badCard;
 
     }
 

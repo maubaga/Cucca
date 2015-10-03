@@ -27,15 +27,18 @@ public class MainActivity extends AppCompatActivity {
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
 
-       switch(item.getItemId()){
-           case R.id.action_test:
-                startTest(); return true;
-           case R.id.action_settings:
-               return true;
-           case R.id.action_guide:
-               startGuide(); return true;
-           default: return super.onOptionsItemSelected(item);
-       }
+        switch (item.getItemId()) {
+            case R.id.action_test:
+                startTest();
+                return true;
+            case R.id.action_settings:
+                return true;
+            case R.id.action_guide:
+                startGuide();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
 
 
     }
@@ -43,16 +46,16 @@ public class MainActivity extends AppCompatActivity {
     /**
      * startTest() create a new Intent for execute some tests
      */
-    private void startTest(){
-        Intent intent = new Intent(this,TestActivity.class);
+    private void startTest() {
+        Intent intent = new Intent(this, TestActivity.class);
         startActivity(intent);
     }
 
     /**
      * startGuide() create a new Intent that explain the game rules
      */
-    private void startGuide(){
-        Intent intent= new Intent(this,GuideActivity.class);
+    private void startGuide() {
+        Intent intent = new Intent(this, GuideActivity.class);
         startActivity(intent);
     }
 

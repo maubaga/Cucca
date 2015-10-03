@@ -49,6 +49,7 @@ public class TestActivity extends AppCompatActivity {
 
     /**
      * A method called by the button "mescola"
+     *
      * @param view the button reference
      */
     public void show(View view) {
@@ -61,7 +62,7 @@ public class TestActivity extends AppCompatActivity {
         button.setVisibility(View.VISIBLE);
 
         byte numberOfCard = player.getNumberOfCards();
-        for(byte i = 0; i < numberOfCard; i++)
+        for (byte i = 0; i < numberOfCard; i++)
             player.playByIndex(i);
 
         showHand();
@@ -69,6 +70,7 @@ public class TestActivity extends AppCompatActivity {
 
     /**
      * A method called by the button "Pesca"
+     *
      * @param view the button reference
      */
     public void winner(View view) {
@@ -87,8 +89,7 @@ public class TestActivity extends AppCompatActivity {
             cucca.tableAddCard(top, 0);
 
             showHand();
-        }
-        else {
+        } else {
             Button button = (Button) view;
             button.setVisibility(View.GONE);
             TextView textView2 = (TextView) findViewById(R.id.text_view2);
@@ -103,7 +104,7 @@ public class TestActivity extends AppCompatActivity {
             count = 0;
             cucca.cleanTable();
         }
-        if (count == 5){
+        if (count == 5) {
             Button button = (Button) view;
             button.setText("Vedi Vincitore");
         }
@@ -146,6 +147,7 @@ public class TestActivity extends AppCompatActivity {
 
     /**
      * A simple method that permits to play a card
+     *
      * @param index the index of the card in the hand to play
      */
     private void play(int index) {
