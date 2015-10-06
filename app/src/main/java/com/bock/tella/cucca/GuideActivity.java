@@ -2,8 +2,7 @@ package com.bock.tella.cucca;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.view.Menu;
-import android.view.MenuItem;
+import android.webkit.WebView;
 
 public class GuideActivity extends AppCompatActivity {
 
@@ -11,7 +10,15 @@ public class GuideActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_guide);
+
+        WebView page = (WebView) findViewById(R.id.web_man);
+
+        String html_page=getString(R.string.doc);
+        page.loadData(html_page,"text/html","UTF-8");
+
+
     }
+
 
     //@Override
     /*public boolean onCreateOptionsMenu(Menu menu) {

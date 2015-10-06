@@ -9,7 +9,9 @@
     <string name="action_guide">Guide</string>
     <string name="title_activity_guide">Guide</string>
     <string name="action_new_match">New Match</string>
-    <string name="documentation">
+    <string name="doc">
+
+        <html><head><title>Manuale</title></head><body>
         Regole:
 
             Si gioca in 4 giocatori (3 bot e 1 player) con un mazzo di 40 carte veneziane.
@@ -45,6 +47,7 @@
             Il giocatore che inizia la giocata gioca una carta qualsiasi, e gli avversari devono giocare la carta
             dello stesso seme con il numero piu\' alto (altrimenti una carta dello stesso seme)
             oppure se non hanno quel seme devono giocare una briscola e se non si hanno briscole una carta qualsiasi.
+        </body></html>
 
     </string>
 
